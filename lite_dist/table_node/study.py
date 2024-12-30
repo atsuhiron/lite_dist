@@ -1,8 +1,10 @@
-import dataclasses
+from __future__ import annotations
 from functools import reduce
+import uuid
 
 from lite_dist.common.trial import Trial
 from lite_dist.common.enums import HashMethod, TrialStatus
+from lite_dist.common.util_func import from_hex
 
 
 class Study:
@@ -67,3 +69,10 @@ class Study:
                 "trial_table": [tri.to_dict() for tri in self.trial_table],
                 "current_order": self.current_order
             }
+
+    @staticmethod
+    def from_dict(d: dict) -> Study:
+        target = from_hex(d["target"])
+        prefix = from_hex(d["target"][0:12])
+        study_id = str(uuid.uuid1(prefix))
+        return Study(study_id, target, HashMethod(d["method"]), [])
