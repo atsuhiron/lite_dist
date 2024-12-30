@@ -45,8 +45,8 @@ class Config:
     @staticmethod
     def from_dict(d: dict) -> Config:
         return Config(
-            table=d["table"],
-            worker=d["worker"]
+            table=TableNodeConfig.from_dict(d["table"]),
+            worker=WorkerNodeConfig.from_dict(d["worker"])
         )
 
 
