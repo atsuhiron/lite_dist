@@ -22,12 +22,12 @@ class BaseTableNodeClient(metaclass=abc.ABCMeta):
 
 
 class TableNodeClient(BaseTableNodeClient):
-    def __init__(self, domain: str):
-        self.domain = domain
+    def __init__(self, ip: str):
+        self.domain = "http://" + ip
 
     def ping_table_server(self) -> bool:
         try:
-            _ = self._get("/")
+            _ = self._ping()
             return True
         except RequestError:
             return False
@@ -38,11 +38,11 @@ class TableNodeClient(BaseTableNodeClient):
     def register_trial(self, trial: Trial) -> RegisterTrialResult:
         pass
 
-    def _get(self, path: str) -> dict:
+    def _ping(self, path: str = "/") -> str:
         resp = requests.get(self.domain + path)
         if resp.status_code != 200:
             raise RequestError("Request to %s is failed, status code is: %d" % (self.domain + path, resp.status_code))
-        return resp.json()
+        return resp.content.decode()
 
     def _post(self, path: str, body: dict[str, str]) -> dict:
         resp = requests.post(self.domain + path, data=body)
