@@ -16,7 +16,7 @@ class Study:
 
         self.current_order = 0
 
-    def simplify_table(self):
+    def simplify_table(self) -> None:
         new_table: list[Trial] = []
         mergeables: dict[int, set[int]] = {}
         trial_num = len(self.trial_table)

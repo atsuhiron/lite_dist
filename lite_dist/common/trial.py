@@ -11,6 +11,9 @@ class TrialRange:
     start: int
     size: int
 
+    def is_empty(self) -> bool:
+        return self.size <= 0
+
     def end(self) -> int:
         return self.start + self.size - 1
 
@@ -55,11 +58,17 @@ class Trial:
     target: int
     method: HashMethod
     status: TrialStatus
+    preimage: int | None = None
+
+    def is_empty(self) -> bool:
+        return self.trial_range.is_empty()
 
     def can_merge(self, other: Trial) -> bool:
         if self.study_id != other.study_id:
             return False
         if self.status != other.status:
+            return False
+        if self.preimage is not None:
             return False
         return self.trial_range.can_merge(other.trial_range)
 
@@ -69,7 +78,8 @@ class Trial:
             self.trial_range.merge(other.trial_range),
             self.target,
             self.method,
-            self.status
+            self.status,
+            self.preimage
         )
 
     def to_dict(self) -> dict:
@@ -78,7 +88,8 @@ class Trial:
             "range": self.trial_range.to_dict(),
             "target": self.target,
             "method": self.method.value,
-            "status": self.status.value
+            "status": self.status.value,
+            "preimage": self.preimage
         }
 
     @staticmethod
@@ -88,5 +99,6 @@ class Trial:
             TrialRange.from_dict(d["range"]),
             from_hex(d["target"]),
             HashMethod(d["method"]),
-            TrialStatus(d["status"])
+            TrialStatus(d["status"]),
+            d.get("preimage")
         )

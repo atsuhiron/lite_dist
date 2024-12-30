@@ -1,4 +1,9 @@
 {
-  "port": 80,
-  "minimum_chunk_size": 65536
+  "table": {
+    "port": 80,
+    "minimum_chunk_size": 65536
+  },
+  "worker": {
+    "thread_num": 0
+  }
 }

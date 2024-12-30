@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 
-from lite_dist.config import CONFIG
 from lite_dist.table_node.study import Study
 from lite_dist.table_node.curriculum import CURRICULUM
 
