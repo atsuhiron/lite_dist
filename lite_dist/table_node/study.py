@@ -5,12 +5,14 @@ from lite_dist.common.trial import Trial
 from lite_dist.common.enums import HashMethod, TrialStatus
 
 
-@dataclasses.dataclass
 class Study:
-    study_id: str
-    target: int
-    method: HashMethod
-    trial_table: list[Trial]
+    def __init__(self, study_id: str, target: int, method: HashMethod, trial_table: list[Trial]):
+        self.study_id = study_id
+        self.target = target
+        self.method = method
+        self.trial_table = trial_table
+
+        self.current_order = 0
 
     def simplify_table(self):
         new_table: list[Trial] = []
@@ -49,3 +51,19 @@ class Study:
             new_table.append(merged)
 
         self.trial_table = new_table
+
+    def to_dict(self, for_display: bool) -> dict:
+        if for_display:
+            return {
+                "study_id": self.study_id,
+                "target": self.target,
+                "method": self.method,
+                "current_order": self.current_order
+            }
+        return {
+                "study_id": self.study_id,
+                "target": self.target,
+                "method": self.method,
+                "trial_table": [tri.to_dict() for tri in self.trial_table],
+                "current_order": self.current_order
+            }
