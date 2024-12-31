@@ -4,6 +4,7 @@
     "minimum_chunk_size": 65536
   },
   "worker": {
-    "thread_num": 0
+    "thread_num": 0,
+    "trial_size_ratio": 64
   }
 }

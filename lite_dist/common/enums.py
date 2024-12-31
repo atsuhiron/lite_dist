@@ -10,3 +10,4 @@ class TrialStatus(str, Enum):
     NOT_CALCULATED = "NOT_CALCULATED"
     RESERVED = "RESERVED"
     DONE = "DONE"
+    RESOLVED = "RESOLVED"

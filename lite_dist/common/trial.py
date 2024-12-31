@@ -51,7 +51,7 @@ class TrialRange:
         return TrialRange(from_hex(d["start"]), d["size"])
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class Trial:
     study_id: str
     trial_range: TrialRange
@@ -81,6 +81,13 @@ class Trial:
             self.status,
             self.preimage
         )
+
+    def on_resolve(self, preimage: int) -> None:
+        self.preimage = preimage
+        self.status = TrialStatus.RESERVED
+
+    def on_done(self) -> None:
+        self.status = TrialStatus.DONE
 
     def to_dict(self) -> dict:
         return {

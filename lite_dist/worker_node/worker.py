@@ -1,4 +1,4 @@
-from lite_dist.common.trial import Trial
+from lite_dist.config import CONFIG
 from lite_dist.worker_node.table_node_client import BaseTableNodeClient
 
 
@@ -8,4 +8,12 @@ class Worker:
 
     def start(self):
         ping_ok = self.client.ping_table_server()
-        print(ping_ok)
+        if not ping_ok:
+            print("Failed to connect to table node server.")
+            return
+
+        if CONFIG.worker.trial_size_ratio <= 0:
+            tsr = 9999
+        else:
+            tsr = CONFIG.worker.trial_size_ratio
+

@@ -3,6 +3,8 @@ from __future__ import annotations
 import dataclasses
 import json
 
+from lite_dist.common.util_func import is_power_of_two
+
 
 @dataclasses.dataclass(frozen=True)
 class TableNodeConfig:
@@ -10,13 +12,7 @@ class TableNodeConfig:
     minimum_chunk_size: int
 
     def __post_init__(self):
-        assert TableNodeConfig.is_power_of_two(self.minimum_chunk_size), "minimum_chunk_size には2の累乗の値を指定してください"
-
-    @staticmethod
-    def is_power_of_two(n: int) -> bool:
-        if n <= 0:
-            return False
-        return (n & (n - 1)) == 0
+        assert is_power_of_two(self.minimum_chunk_size), "minimum_chunk_size には2の累乗の値を指定してください"
 
     @staticmethod
     def from_dict(d: dict) -> TableNodeConfig:
@@ -29,11 +25,16 @@ class TableNodeConfig:
 @dataclasses.dataclass(frozen=True)
 class WorkerNodeConfig:
     thread_num: int
+    trial_size_ratio: int
+
+    def __post_init__(self):
+        assert is_power_of_two(self.trial_size_ratio), "trial_size_ratio には2の累乗の値を指定してください"
 
     @staticmethod
     def from_dict(d: dict) -> WorkerNodeConfig:
         return WorkerNodeConfig(
-            thread_num=d.get("thread_num", 0)
+            thread_num=d.get("thread_num", 0),
+            trial_size_ratio=d.get("trial_size_ratio", 0)
         )
 
 
