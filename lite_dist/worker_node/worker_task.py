@@ -2,7 +2,6 @@ from typing import Callable
 import abc
 
 from lite_dist.worker_node.exceptions import ConfigError
-from lite_dist.config import CONFIG
 from lite_dist.common.trial import Trial
 
 
@@ -13,15 +12,16 @@ class BaseWorkerTask(metaclass=abc.ABCMeta):
 
 
 class HashWorkerTask(BaseWorkerTask):
-    def __init__(self, hash_func: Callable[[bytes], str]):
+    def __init__(self, hash_func: Callable[[bytes], bytes], thread_num: int):
         self.hash_func = hash_func
+        self.thread_num = thread_num
 
     def run(self, trial: Trial) -> Trial:
-        if CONFIG.worker.thread_num == 1:
+        if self.thread_num == 1:
             preimage_or_none = self._run_with_single_thread(
                 trial.target, trial.trial_range.start, trial.trial_range.size
             )
-        elif CONFIG.worker.thread_num > 1:
+        elif self.thread_num > 1:
             preimage_or_none = self._run_with_multi_thread(
                 trial.target, trial.trial_range.start, trial.trial_range.size
             )
@@ -35,10 +35,10 @@ class HashWorkerTask(BaseWorkerTask):
         return trial
 
     def _run_with_single_thread(self, target_int: int, start_int: int, size: int) -> int | None:
-        target_bin = target_int.to_bytes()
+        target_bytes = target_int.to_bytes()
         for value in range(start_int, start_int + size):
-            hashed_bin = self.hash_func(value.to_bytes())
-            if hashed_bin == target_bin:
+            hashed_bytes = self.hash_func(value.to_bytes())
+            if hashed_bytes == target_bytes:
                 return value
         return None
 

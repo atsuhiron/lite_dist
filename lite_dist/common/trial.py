@@ -84,7 +84,7 @@ class Trial:
 
     def on_resolve(self, preimage: int) -> None:
         self.preimage = preimage
-        self.status = TrialStatus.RESERVED
+        self.status = TrialStatus.RESOLVED
 
     def on_done(self) -> None:
         self.status = TrialStatus.DONE
