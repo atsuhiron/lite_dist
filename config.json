@@ -1,0 +1,13 @@
+{
+  "common": {
+    "minimum_chunk_size": 65536
+  },
+  "table": {
+    "port": 80
+  },
+  "worker": {
+    "thread_num": 0,
+    "trial_size_ratio": 0,
+    "sleep_sec_on_empty": 10
+  }
+}

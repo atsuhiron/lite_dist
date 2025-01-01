@@ -115,3 +115,13 @@ class Trial:
             TrialStatus(d["status"]),
             preimage
         )
+
+    @staticmethod
+    def create_benchmark_trial() -> Trial:
+        return Trial(
+            "benchmark",
+            TrialRange(0, 65536 * 64),
+            8196348318185155500105808291003927362,
+            HashMethod.MD5,
+            TrialStatus.RESERVED
+        )

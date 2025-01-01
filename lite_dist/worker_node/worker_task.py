@@ -1,8 +1,9 @@
 from typing import Callable
 import abc
 
-from lite_dist.worker_node.exceptions import ConfigError
 from lite_dist.common.trial import Trial
+from lite_dist.common.util_func import to_bytes
+from lite_dist.worker_node.exceptions import ConfigError
 
 
 class BaseWorkerTask(metaclass=abc.ABCMeta):
@@ -12,7 +13,7 @@ class BaseWorkerTask(metaclass=abc.ABCMeta):
 
 
 class HashWorkerTask(BaseWorkerTask):
-    def __init__(self, hash_func: Callable[[bytes], bytes], thread_num: int):
+    def __init__(self, hash_func: Callable[[int], bytes], thread_num: int):
         self.hash_func = hash_func
         self.thread_num = thread_num
 
@@ -35,12 +36,18 @@ class HashWorkerTask(BaseWorkerTask):
         return trial
 
     def _run_with_single_thread(self, target_int: int, start_int: int, size: int) -> int | None:
-        target_bytes = target_int.to_bytes()
+        target_bytes = to_bytes(target_int)
         for value in range(start_int, start_int + size):
-            hashed_bytes = self.hash_func(value.to_bytes())
+            hashed_bytes = self.hash_func(value)
             if hashed_bytes == target_bytes:
                 return value
         return None
 
     def _run_with_multi_thread(self, target_int: int, start_int: int, size: int) -> int | None:
         pass  # TODO: Implement
+        target_bytes = to_bytes(target_int)
+        for value in range(start_int, start_int + size):
+            hashed_bytes = self.hash_func(value)
+            if hashed_bytes == target_bytes:
+                return value
+        return None
