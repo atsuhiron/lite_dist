@@ -3,7 +3,7 @@ import abc
 import requests
 
 from lite_dist.common.trial import Trial
-from lite_dist.common.register_trial_result import RegisterTrialResult
+from lite_dist.common.register_result import TrialRegisterResult
 from lite_dist.worker_node.exceptions import RequestError
 
 
@@ -17,7 +17,7 @@ class BaseTableNodeClient(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def register_trial(self, trial: Trial) -> RegisterTrialResult:
+    def register_trial(self, trial: Trial) -> TrialRegisterResult:
         pass
 
 
@@ -35,7 +35,7 @@ class TableNodeClient(BaseTableNodeClient):
     def reserve_trial(self, max_size: int) -> Trial:
         pass
 
-    def register_trial(self, trial: Trial) -> RegisterTrialResult:
+    def register_trial(self, trial: Trial) -> TrialRegisterResult:
         pass
 
     def _ping(self, path: str = "/") -> str:

@@ -54,6 +54,7 @@ class TrialRange:
 @dataclasses.dataclass
 class Trial:
     study_id: str
+    trial_id: str
     trial_range: TrialRange
     target: int
     method: HashMethod
@@ -62,6 +63,9 @@ class Trial:
 
     def is_empty(self) -> bool:
         return self.trial_range.is_empty()
+
+    def is_resolved(self) -> bool:
+        return self.status == TrialStatus.RESOLVED
 
     def can_merge(self, other: Trial) -> bool:
         if self.study_id != other.study_id:
@@ -73,9 +77,11 @@ class Trial:
         return self.trial_range.can_merge(other.trial_range)
 
     def merge(self, other: Trial) -> Trial:
+        new_range = self.trial_range.merge(other.trial_range)
         return Trial(
             self.study_id,
-            self.trial_range.merge(other.trial_range),
+            self.create_trial_hash(self.study_id, new_range),
+            new_range,
             self.target,
             self.method,
             self.status,
@@ -109,6 +115,7 @@ class Trial:
 
         return Trial(
             d["id"],
+            d["trial_id"],
             TrialRange.from_dict(d["range"]),
             from_hex(d["target"]),
             HashMethod(d["method"]),
@@ -120,8 +127,14 @@ class Trial:
     def create_benchmark_trial() -> Trial:
         return Trial(
             "benchmark",
+            "benchmark",
             TrialRange(0, 65536 * 64),
             8196348318185155500105808291003927362,
             HashMethod.MD5,
             TrialStatus.RESERVED
         )
+
+    @staticmethod
+    def create_trial_hash(study_id: str, trial_range: TrialRange) -> str:
+        hash_int = hash((study_id, trial_range.start, trial_range.size))
+        return hex(hash_int)[2:]

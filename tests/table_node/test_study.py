@@ -7,7 +7,7 @@ def _create_study_from_ranges(ranges: list[TrialRange], status_list: list[TrialS
     if status_list is None:
         status_list = [TrialStatus.DONE] * len(ranges)
 
-    return Study("", 0, HashMethod.MD5, [Trial("", tr, 0, HashMethod.MD5, st) for tr, st in zip(ranges, status_list)])
+    return Study("", 0, HashMethod.MD5, [Trial("", "", tr, 0, HashMethod.MD5, st) for tr, st in zip(ranges, status_list)])
 
 
 def test_table_simplify_empty():
