@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import os
+import pathlib
 
 from lite_dist.common.enums import TrialSuggestMethod
 from lite_dist.common.util_func import is_power_of_two
@@ -74,7 +75,8 @@ class Config:
         )
 
 
-with open("config.json", "r") as f:
+_repo_path = pathlib.Path(__file__).parent.parent
+with open(str(_repo_path) + "/config.json", "r") as f:
     json_dict = json.load(f)
 
 CONFIG = Config.from_dict(json_dict)

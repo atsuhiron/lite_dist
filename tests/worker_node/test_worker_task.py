@@ -6,6 +6,10 @@ from lite_dist.common.util_func import to_bytes
 from lite_dist.worker_node.worker_task import HashWorkerTask
 
 
+def _id_hash(x: int) -> tuple[int, bytes]:
+    return x, to_bytes(x)
+
+
 @pytest.mark.parametrize(
     ["trial", "expected"],
     [
@@ -22,6 +26,6 @@ from lite_dist.worker_node.worker_task import HashWorkerTask
     ]
 )
 def test_single_thread_run(trial: Trial, expected: Trial):
-    sut = HashWorkerTask(lambda x: to_bytes(x), 1)
-    actual = sut.run(trial)
+    sut = HashWorkerTask(_id_hash, 1)
+    actual = sut.run(trial, None)
     assert actual == expected
