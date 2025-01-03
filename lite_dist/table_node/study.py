@@ -110,7 +110,8 @@ class Study:
                 "target": self.target,
                 "method": self.method,
                 "trial_table": [tri.to_dict() for tri in self.trial_table],
-                "current_max": self.current_max
+                "current_max": self.current_max,
+                "result": self.result
             }
 
     @staticmethod

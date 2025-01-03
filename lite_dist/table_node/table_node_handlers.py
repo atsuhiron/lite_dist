@@ -26,6 +26,23 @@ def handle_status():
     return jsonify(CURRICULUM.to_dict()), 200
 
 
+@app.route("/study")
+def handle_study():
+    try:
+        study_id = request.args["study_id"]
+    except KeyError as e:
+        return jsonify({"message": f"{e} を指定してください"}), 400
+
+    try:
+        study = CURRICULUM.pop_study_if_resolved(study_id)
+        if study is None:
+            return jsonify({"message": "%s has not been resolved yet" % study_id}), 200
+        else:
+            return jsonify(study.to_dict()), 200
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+
+
 @app.route("/trial/reserve")
 def handle_trial_reserve():
     try:

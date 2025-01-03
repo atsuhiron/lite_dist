@@ -11,16 +11,28 @@ class Curriculum:
         self.studies = studies or []
 
     def find_study(self, study_id: str) -> Study:
-        for st in self.studies:
-            if st.study_id == study_id:
-                return st
+        with _lock:
+            for st in self.studies:
+                if st.study_id == study_id:
+                    return st
+
+        raise ValueError("不正な id です: %s" % study_id)
+
+    def pop_study_if_resolved(self, study_id: str) -> Study | None:
+        with _lock:
+            for i, st in enumerate(self.studies):
+                if st.study_id == study_id:
+                    if st.is_resolved():
+                        return self.studies.pop(i)
+                    return None
 
         raise ValueError("不正な id です: %s" % study_id)
 
     def find_current_study(self) -> Study | None:
-        for st in self.studies:
-            if not st.is_resolved():
-                return st
+        with _lock:
+            for st in self.studies:
+                if not st.is_resolved():
+                    return st
         return None
 
     def can_generate_trial(self) -> bool:
