@@ -65,7 +65,8 @@ class Study:
                 new_table.append(merged)
 
             self.trial_table = sorted(new_table, key=lambda tri: tri.trial_range.start)
-        self.current_max = self.trial_table[-1].trial_range.end()
+        if len(self.trial_table) > 0:
+            self.current_max = self.trial_table[-1].trial_range.end()
 
     def suggest_next_trial(self, max_size: int) -> Trial:
         try:
