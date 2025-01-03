@@ -123,8 +123,8 @@ class Trial:
     @staticmethod
     def from_dict(d: dict) -> Trial:
         preimage = d.get("preimage")
-        if isinstance(preimage, int):
-            preimage = to_hex(preimage)
+        if isinstance(preimage, str):
+            preimage = from_hex(preimage)
         elif preimage is not None:
             raise ValueError("preimage は未指定(None)か整数を指定してください")
 
