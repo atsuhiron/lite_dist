@@ -12,17 +12,19 @@ class Curriculum:
 
     def find_study(self, study_id: str) -> Study:
         for st in self.studies:
-            if st.study_id != study_id:
-                continue
-            return st
+            if st.study_id == study_id:
+                return st
 
         raise ValueError("不正な id です: %s" % study_id)
 
-    def can_generate_trial(self) -> bool:
+    def find_current_study(self) -> Study | None:
         for st in self.studies:
             if not st.is_resolved():
-                return True
-        return False
+                return st
+        return None
+
+    def can_generate_trial(self) -> bool:
+        return self.find_current_study() is not None
 
     def to_dict(self) -> dict:
         return {"studies": [st.to_dict(True) for st in self.studies]}

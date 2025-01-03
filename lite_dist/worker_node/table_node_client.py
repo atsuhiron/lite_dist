@@ -22,30 +22,38 @@ class BaseTableNodeClient(metaclass=abc.ABCMeta):
 
 
 class TableNodeClient(BaseTableNodeClient):
-    def __init__(self, ip: str):
+    def __init__(self, ip: str, name: str):
         self.domain = "http://" + ip
+        self.name = name
 
     def ping_table_server(self) -> bool:
         try:
-            _ = self._ping()
+            _ = self._get("/", resp_content_type="text")
             return True
         except RequestError:
             return False
 
     def reserve_trial(self, max_size: int) -> Trial:
-        pass
+        resp = self._get("/trial/reserve", {"max_size": str(max_size), "name": self.name})
+        return Trial.from_dict(resp)
 
     def register_trial(self, trial: Trial) -> TrialRegisterResult:
-        pass
+        resp = self._post("/trial/register", trial.to_dict(), {"name": self.name})
+        return TrialRegisterResult.from_dict(resp)
 
-    def _ping(self, path: str = "/") -> str:
-        resp = requests.get(self.domain + path)
+    def _get(self, path: str, param: dict[str, str] = None, resp_content_type: str = "json") -> str | dict:
+        resp = requests.get(self.domain + path, param)
         if resp.status_code != 200:
             raise RequestError("Request to %s is failed, status code is: %d" % (self.domain + path, resp.status_code))
-        return resp.content.decode()
 
-    def _post(self, path: str, body: dict[str, str]) -> dict:
-        resp = requests.post(self.domain + path, data=body)
+        if resp_content_type == "text":
+            return resp.content.decode()
+        if resp_content_type == "json":
+            return resp.json()
+        raise RequestError("不明な content_type です: %s" % resp_content_type)
+
+    def _post(self, path: str, param: dict[str, str], body: dict) -> dict:
+        resp = requests.post(self.domain + path, data=body, params=param)
         if resp.status_code != 200:
             raise RequestError("Request to %s is failed, status code is: %d" % (self.domain + path, resp.status_code))
         return resp.json()

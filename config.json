@@ -3,7 +3,8 @@
     "minimum_chunk_size": 65536
   },
   "table": {
-    "port": 80
+    "port": 80,
+    "trial_suggest_method": "sequential"
   },
   "worker": {
     "thread_num": 0,

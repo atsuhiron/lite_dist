@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import math
 
 from lite_dist.common.enums import HashMethod, TrialStatus
 from lite_dist.common.util_func import to_hex, from_hex
@@ -50,6 +51,10 @@ class TrialRange:
     def from_dict(d: dict) -> TrialRange:
         return TrialRange(from_hex(d["start"]), d["size"])
 
+    @staticmethod
+    def create_empty() -> TrialRange:
+        return TrialRange(0, 0)
+
 
 @dataclasses.dataclass
 class Trial:
@@ -87,6 +92,11 @@ class Trial:
             self.status,
             self.preimage
         )
+
+    def get_size_power(self) -> float:
+        if self.is_empty():
+            return -1.0
+        return math.log2(self.trial_range.size)
 
     def on_resolve(self, preimage: int) -> None:
         self.preimage = preimage
@@ -138,3 +148,14 @@ class Trial:
     def create_trial_hash(study_id: str, trial_range: TrialRange) -> str:
         hash_int = hash((study_id, trial_range.start, trial_range.size))
         return hex(hash_int)[2:]
+
+    @staticmethod
+    def create_empty() -> Trial:
+        return Trial(
+            "",
+            "",
+            TrialRange.create_empty(),
+            0,
+            HashMethod.DEFAULT,
+            TrialStatus.NOT_CALCULATED
+        )

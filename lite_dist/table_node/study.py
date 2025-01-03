@@ -3,9 +3,16 @@ from functools import reduce
 import uuid
 import threading
 
+from lite_dist.config import CONFIG
 from lite_dist.common.trial import Trial
-from lite_dist.common.enums import HashMethod, TrialStatus
+from lite_dist.common.enums import HashMethod, TrialStatus, TrialSuggestMethod
 from lite_dist.common.util_func import from_hex
+from lite_dist.table_node.trial_suggest_strategy import BaseTrialSuggestStrategy, SequentialTrialSuggestStrategy
+
+
+_TRIAL_SUGGEST: dict[TrialSuggestMethod: BaseTrialSuggestStrategy] = {
+    TrialSuggestMethod.SEQUENTIAL: SequentialTrialSuggestStrategy()
+}
 
 
 class Study:
@@ -17,7 +24,7 @@ class Study:
         self.result = None
 
         self._table_lock = threading.Lock()
-        self.current_order = 0
+        self.current_max = 0
 
     def simplify_table(self) -> None:
         new_table: list[Trial] = []
@@ -57,7 +64,24 @@ class Study:
                     merged = merged.merge(trial)
                 new_table.append(merged)
 
-            self.trial_table = new_table
+            self.trial_table = sorted(new_table, key=lambda tri: tri.trial_range.start)
+        self.current_max = self.trial_table[-1].trial_range.end()
+
+    def suggest_next_trial(self, max_size: int) -> Trial:
+        try:
+            strategy = _TRIAL_SUGGEST[CONFIG.table.trial_suggest_method]
+        except KeyError:
+            raise ValueError("不正な suggest_method です %s" % CONFIG.table.trial_suggest_method.name)
+
+        trial_range = strategy.suggest(max_size, self.trial_table)
+        return Trial(
+            self.study_id,
+            Trial.create_trial_hash(self.study_id, trial_range),
+            trial_range,
+            self.target,
+            self.method,
+            TrialStatus.RESERVED
+        )
 
     def update_table(self, new_trial: Trial):
         with self._table_lock:
@@ -82,14 +106,14 @@ class Study:
                 "study_id": self.study_id,
                 "target": self.target,
                 "method": self.method,
-                "current_order": self.current_order
+                "current_max": self.current_max
             }
         return {
                 "study_id": self.study_id,
                 "target": self.target,
                 "method": self.method,
                 "trial_table": [tri.to_dict() for tri in self.trial_table],
-                "current_order": self.current_order
+                "current_max": self.current_max
             }
 
     @staticmethod

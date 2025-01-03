@@ -4,6 +4,7 @@ import dataclasses
 import json
 import os
 
+from lite_dist.common.enums import TrialSuggestMethod
 from lite_dist.common.util_func import is_power_of_two
 
 
@@ -24,11 +25,13 @@ class CommonConfig:
 @dataclasses.dataclass(frozen=True)
 class TableNodeConfig:
     port: int
+    trial_suggest_method: TrialSuggestMethod
 
     @staticmethod
     def from_dict(d: dict) -> TableNodeConfig:
         return TableNodeConfig(
-            port=d["port"]
+            port=d["port"],
+            trial_suggest_method=TrialSuggestMethod(d["trial_suggest_method"])
         )
 
 

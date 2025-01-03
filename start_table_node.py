@@ -3,4 +3,4 @@ from lite_dist.table_node.table_node_handlers import app
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=False, port=CONFIG.table.port)
+    app.run(host="0.0.0.0", debug=True, port=CONFIG.table.port)

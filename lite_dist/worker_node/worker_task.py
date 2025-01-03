@@ -1,6 +1,8 @@
 from typing import Callable
 import abc
 
+from tqdm import tqdm
+
 from lite_dist.common.trial import Trial
 from lite_dist.common.util_func import to_bytes
 from lite_dist.worker_node.exceptions import ConfigError
@@ -37,7 +39,7 @@ class HashWorkerTask(BaseWorkerTask):
 
     def _run_with_single_thread(self, target_int: int, start_int: int, size: int) -> int | None:
         target_bytes = to_bytes(target_int)
-        for value in range(start_int, start_int + size):
+        for value in tqdm(range(start_int, start_int + size)):
             hashed_bytes = self.hash_func(value)
             if hashed_bytes == target_bytes:
                 return value
@@ -46,7 +48,7 @@ class HashWorkerTask(BaseWorkerTask):
     def _run_with_multi_thread(self, target_int: int, start_int: int, size: int) -> int | None:
         pass  # TODO: Implement
         target_bytes = to_bytes(target_int)
-        for value in range(start_int, start_int + size):
+        for value in tqdm(range(start_int, start_int + size)):
             hashed_bytes = self.hash_func(value)
             if hashed_bytes == target_bytes:
                 return value

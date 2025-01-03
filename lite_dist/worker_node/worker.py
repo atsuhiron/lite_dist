@@ -36,14 +36,18 @@ class Worker:
         logger.info("Trial size ratio is: %d" % tsr)
 
         while True:
-            trial = self.client.reserve_trial(tsr * CONFIG.common.minimum_chunk_size)
-            if trial.is_empty():
-                logger.info("No study. sleep %d sec" % CONFIG.worker.sleep_sec_on_empty)
-                time.sleep(CONFIG.worker.sleep_sec_on_empty)
+            self._step(tsr * CONFIG.common.minimum_chunk_size)
 
-            task = self.map_worker_task(trial.method)
-            trial = task.run(trial)
-            _ = self.client.register_trial(trial)
+    def _step(self, max_size: int) -> None:
+        trial = self.client.reserve_trial(max_size)
+        if trial.is_empty():
+            logger.info("No study. sleep %d sec" % CONFIG.worker.sleep_sec_on_empty)
+            time.sleep(CONFIG.worker.sleep_sec_on_empty)
+            return
+
+        task = self.map_worker_task(trial.method)
+        trial = task.run(trial)
+        _ = self.client.register_trial(trial)
 
     @staticmethod
     def _measure_trial_ratio_size() -> int:
