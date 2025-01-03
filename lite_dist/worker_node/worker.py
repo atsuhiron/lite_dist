@@ -2,6 +2,7 @@ import hashlib
 import time
 import math
 import logging
+from multiprocessing.pool import Pool
 
 from lite_dist.config import CONFIG
 from lite_dist.common.trial import Trial
@@ -18,9 +19,21 @@ handler.setLevel(logging.INFO)
 logger.addHandler(handler)
 
 
+def md5(x: int) -> tuple[int, bytes]:
+    return x, hashlib.md5(to_bytes(x)).digest()
+
+
+def sha1(x: int) -> tuple[int, bytes]:
+    return x, hashlib.sha1(to_bytes(x)).digest()
+
+
 class Worker:
     def __init__(self, table_node_client: BaseTableNodeClient):
         self.client = table_node_client
+        if CONFIG.worker.get_thread_num() == 1:
+            self.pool = None
+        else:
+            self.pool = Pool(CONFIG.worker.get_thread_num())
 
     def start(self):
         ping_ok = self.client.ping_table_server()
@@ -46,21 +59,21 @@ class Worker:
             return
 
         task = self.map_worker_task(trial.method)
-        trial = task.run(trial)
+        trial = task.run(trial, self.pool)
         _ = self.client.register_trial(trial)
 
     @staticmethod
     def _measure_trial_ratio_size() -> int:
         benchmark_trial = Trial.create_benchmark_trial()
-        wt = HashWorkerTask(lambda x: hashlib.md5(to_bytes(x)).digest(), CONFIG.worker.get_thread_num())
+        wt = HashWorkerTask(md5, CONFIG.worker.get_thread_num())
 
         start_time = time.time()
-        wt.run(benchmark_trial)
+        wt.run(benchmark_trial, None)
         elapsed = time.time() - start_time
         logger.info(elapsed)
 
-        # 2 秒で 64 倍になるようにする
-        log_cap = math.log2(elapsed) - 1
+        # 1 秒で 64 倍になるようにする
+        log_cap = math.log2(elapsed)
         ratio_power = int(log_cap + 0.5) + 6
         return 2 ** ratio_power
 
@@ -68,8 +81,8 @@ class Worker:
     def map_worker_task(method: HashMethod) -> BaseWorkerTask:
         match method:
             case HashMethod.MD5:
-                return HashWorkerTask(lambda x: hashlib.md5(to_bytes(x)).digest(), CONFIG.worker.get_thread_num())
+                return HashWorkerTask(md5, CONFIG.worker.get_thread_num())
             case HashMethod.SHA1:
-                return HashWorkerTask(lambda x: hashlib.sha1(to_bytes(x)).digest(), CONFIG.worker.get_thread_num())
+                return HashWorkerTask(sha1, CONFIG.worker.get_thread_num())
             case _:
                 raise ValueError("不明なメソッドです: %s" % method.name)
