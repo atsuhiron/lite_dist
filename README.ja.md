@@ -27,10 +27,10 @@ python >= 3.12
 ## 4. ノード構成
 ```mermaid
 flowchart LR
-    管理ノード -- "1) /study/register" --> テーブルノード
-    管理ノード -- "4) /study" --> テーブルノード
-    ワーカーノード -- "2) /trial/reserve" --> テーブルノード
-    ワーカーノード -- "3) /trial/register" --> テーブルノード
+    管理ノード -- 1. /study/register --> テーブルノード
+    管理ノード -- 4. /study --> テーブルノード
+    ワーカーノード -- 2. /trial/reserve --> テーブルノード
+    ワーカーノード -- 3. /trial/register --> テーブルノード
 ```
 カッコ内の数字は典型的な使い方でのAPIアクセスの順番を表しています。
 
