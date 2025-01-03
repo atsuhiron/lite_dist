@@ -34,7 +34,7 @@ class StudyRegisterResult:
     def to_dict(self) -> dict:
         return {
             "success": self.success,
-            "id": self.study_id,
+            "study_id": self.study_id,
             "message": self.message
         }
 
@@ -42,6 +42,6 @@ class StudyRegisterResult:
     def from_dict(d: dict) -> StudyRegisterResult:
         return StudyRegisterResult(
             d["success"],
-            d["id"],
+            d["study_id"],
             d.get("message")
         )
