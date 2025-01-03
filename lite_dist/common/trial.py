@@ -106,13 +106,18 @@ class Trial:
         self.status = TrialStatus.DONE
 
     def to_dict(self) -> dict:
+        if self.preimage is None:
+            preimage = None
+        else:
+            preimage = to_hex(self.preimage)
         return {
-            "id": self.study_id,
+            "study_id": self.study_id,
+            "trial_id": self.trial_id,
             "range": self.trial_range.to_dict(),
             "target": to_hex(self.target),
             "method": self.method.value,
             "status": self.status.value,
-            "preimage": to_hex(self.preimage)
+            "preimage": preimage
         }
 
     @staticmethod
@@ -124,7 +129,7 @@ class Trial:
             raise ValueError("preimage は未指定(None)か整数を指定してください")
 
         return Trial(
-            d["id"],
+            d["study_id"],
             d["trial_id"],
             TrialRange.from_dict(d["range"]),
             from_hex(d["target"]),

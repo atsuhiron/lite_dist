@@ -73,15 +73,18 @@ class Study:
         except KeyError:
             raise ValueError("不正な suggest_method です %s" % CONFIG.table.trial_suggest_method.name)
 
-        trial_range = strategy.suggest(max_size, self.trial_table)
-        return Trial(
-            self.study_id,
-            Trial.create_trial_hash(self.study_id, trial_range),
-            trial_range,
-            self.target,
-            self.method,
-            TrialStatus.RESERVED
-        )
+        with self._table_lock:
+            trial_range = strategy.suggest(max_size, self.trial_table)
+            trial = Trial(
+                self.study_id,
+                Trial.create_trial_hash(self.study_id, trial_range),
+                trial_range,
+                self.target,
+                self.method,
+                TrialStatus.RESERVED
+            )
+            self.trial_table.append(trial)
+        return trial
 
     def update_table(self, new_trial: Trial):
         with self._table_lock:
@@ -100,14 +103,7 @@ class Study:
     def is_resolved(self) -> bool:
         return self.result is not None
 
-    def to_dict(self, for_display: bool) -> dict:
-        if for_display:
-            return {
-                "study_id": self.study_id,
-                "target": self.target,
-                "method": self.method,
-                "current_max": self.current_max
-            }
+    def to_dict(self) -> dict:
         return {
                 "study_id": self.study_id,
                 "target": self.target,

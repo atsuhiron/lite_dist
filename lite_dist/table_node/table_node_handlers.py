@@ -29,14 +29,14 @@ def handle_status():
 @app.route("/trial/reserve")
 def handle_trial_reserve():
     try:
-        max_size = int(request.form["max_size"])
-        worker_name = request.form["name"]
+        max_size = int(request.args["max_size"])
+        worker_name = request.args["name"]
     except KeyError as e:
         return jsonify({"message": f"{e} を指定してください"}), 400
 
     study = CURRICULUM.find_current_study()
     if study is None:
-        return jsonify(Trial.create_empty()), 200
+        return jsonify(Trial.create_empty().to_dict()), 200
 
     trial = study.suggest_next_trial(max_size)
     logger.info("Reserve trial: sid=%s name=%s size_power2=%.2f" % (study.study_id, worker_name, trial.get_size_power()))
@@ -46,7 +46,7 @@ def handle_trial_reserve():
 @app.route("/trial/register", methods=["POST"])
 def handle_trial_register():
     try:
-        worker_name = request.form["name"]
+        worker_name = request.args["name"]
         trial = Trial.from_dict(request.json)
         study = CURRICULUM.find_study(trial.study_id)
         study.update_table(trial)

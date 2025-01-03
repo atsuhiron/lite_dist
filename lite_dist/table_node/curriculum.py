@@ -27,7 +27,7 @@ class Curriculum:
         return self.find_current_study() is not None
 
     def to_dict(self) -> dict:
-        return {"studies": [st.to_dict(True) for st in self.studies]}
+        return {"studies": [st.to_dict() for st in self.studies]}
 
     def insert_study(self, study: Study):
         with _lock:

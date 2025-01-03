@@ -22,6 +22,8 @@ class BaseTableNodeClient(metaclass=abc.ABCMeta):
 
 
 class TableNodeClient(BaseTableNodeClient):
+    HEADERS = {"Content-Type": "application/json; charset=utf-8"}
+
     def __init__(self, ip: str, name: str):
         self.domain = "http://" + ip
         self.name = name
@@ -38,7 +40,8 @@ class TableNodeClient(BaseTableNodeClient):
         return Trial.from_dict(resp)
 
     def register_trial(self, trial: Trial) -> TrialRegisterResult:
-        resp = self._post("/trial/register", trial.to_dict(), {"name": self.name})
+        print(trial.to_dict())
+        resp = self._post("/trial/register", {"name": self.name}, trial.to_dict())
         return TrialRegisterResult.from_dict(resp)
 
     def _get(self, path: str, param: dict[str, str] = None, resp_content_type: str = "json") -> str | dict:
@@ -53,7 +56,7 @@ class TableNodeClient(BaseTableNodeClient):
         raise RequestError("不明な content_type です: %s" % resp_content_type)
 
     def _post(self, path: str, param: dict[str, str], body: dict) -> dict:
-        resp = requests.post(self.domain + path, data=body, params=param)
+        resp = requests.post(self.domain + path, json=body, params=param, headers=self.HEADERS)
         if resp.status_code != 200:
-            raise RequestError("Request to %s is failed, status code is: %d" % (self.domain + path, resp.status_code))
+            raise RequestError("Request to %s is failed, status code is: %d, body=%s" % (self.domain + path, resp.status_code, resp.json()))
         return resp.json()
