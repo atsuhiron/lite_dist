@@ -27,10 +27,10 @@ python >= 3.12
 ## 4. ノード構成
 ```mermaid
 flowchart LR
-    管理ノード -- 1. /study/register --> テーブルノード
-    管理ノード -- 4. /study --> テーブルノード
-    ワーカーノード -- 2. /trial/reserve --> テーブルノード
-    ワーカーノード -- 3. /trial/register --> テーブルノード
+    管理ノード -->|1. /study/register| テーブルノード
+    管理ノード -->|4. /study| テーブルノード
+    ワーカーノード -->|2. /trial/reserve| テーブルノード
+    ワーカーノード -->|3. /trial/register| テーブルノード
 ```
 カッコ内の数字は典型的な使い方でのAPIアクセスの順番を表しています。
 
@@ -131,13 +131,13 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 
 ## 6. テーブルノードのAPI仕様
 
-| パス              | メソッド | パラメータ                                     | ボディ     | レスポンス                  | 説明                                                                                                           |
-|-----------------|------|-------------------------------------------|---------|------------------------|--------------------------------------------------------------------------------------------------------------|
-| /study          | GET  | [必須] study_id: `str`                      | なし      | `Study` あるいは `Message` | 処理結果の取得を試みます。<br/>まだ処理が完了していない場合は `Message` が返却されます。                                                         |
-| /study/register | POST | なし                                        | `Study` | `StudyRegisterResult`  |                                                                                                              |
-| /trial/reserve  | GET  | [必須] max_size: `int`<br/>[必須] name: `str` | なし      | `Trial`                | ワーカーノードが担当する `Trial` を確保するときに使います。<br/>テーブルノードの状況によっては計算量 (`Trial.trial_range.size`) が max_size を下回ることがあります。 |
-| /trial/register | POST | [必須] name: `str`                          | `Trial` | `TrialRegisterResult`  |                                                                                                              |
-| /status         | GET  | なし                                        | なし      | `Curriculum`           | 現在のテーブルノードの状況を確認できます。                                                                                        |
+| パス              | メソッド | パラメータ                           | ボディ     | レスポンス                  | 説明                                                                                                           |
+|-----------------|------|---------------------------------|---------|------------------------|--------------------------------------------------------------------------------------------------------------|
+| /study          | GET  | study_id: `str`                 | なし      | `Study` あるいは `Message` | 処理結果の取得を試みます。<br/>まだ処理が完了していない場合は `Message` が返却されます。                                                         |
+| /study/register | POST | なし                              | `Study` | `StudyRegisterResult`  |                                                                                                              |
+| /trial/reserve  | GET  | max_size: `int`<br/>name: `str` | なし      | `Trial`                | ワーカーノードが担当する `Trial` を確保するときに使います。<br/>テーブルノードの状況によっては計算量 (`Trial.trial_range.size`) が max_size を下回ることがあります。 |
+| /trial/register | POST | name: `str`                     | `Trial` | `TrialRegisterResult`  |                                                                                                              |
+| /status         | GET  | なし                              | なし      | `Curriculum`           | 現在のテーブルノードの状況を確認できます。                                                                                        |
 
 ## 7. 型定義
 
