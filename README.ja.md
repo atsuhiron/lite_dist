@@ -14,7 +14,7 @@ python >= 3.12
 与えられた `Study` (タスクのこと) を分散処理で実行します。次の3種類のノードを使用します。実際の物理マシンはどれを兼任しても問題無いです。
 > [!WARNING]  
 > 現状の実装ではハッシュ関数の原像計算のみに対応しています。
-> 
+
 ### 3-1. 管理ノード
 `Study` の登録や結果の取得を行います。このノードを動かすための python スクリプトは現状では実装していないので、curl や talend などのAPIツールを使用してください。
 
@@ -91,7 +91,7 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
     "method": "md5",
     "result": "696e666f",
     "study_id": "4dd9e078-ca16-11ef-8f79-caf9b6b99962",
-    "target": 269800643169556693053557693941273830412,
+    "target": "caf9b6b99962bf5c2264824231d7a40c",
     "trial_table": [
         {
             "method": "md5",
@@ -154,21 +154,21 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 
 ## 8. 型定義
 ### 8-1. Trial
-| 名前          | 型          | 必須    | 説明                                                                                                                                                    |
-|-------------|------------|-------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| study_id    | str        | true  | 親となる `Study` の ID。target と生成時刻から生成される。                                                                                                                |
-| trial_id    | str        | true  | このオブジェクトの ID。study_id と trial_range から生成される。                                                                                                          |
-| trial_range | TrialRange | true  | 計算する範囲。                                                                                                                                               |
-| target      | str        | true  | 目標となる値。バイト配列をhex表記したもの。                                                                                                                               |
-| method      | str        | true  | 計算手法を表す文字列。                                                                                                                                           |
-| status      | str        | true  | この `Trial` の状態。取りうる値は以下の通り。<br/>- NOT_CALCULATED: 計算前<br/>-RESERVED: いずれかの `Trial` により確保されている<br/>-DONE: 計算済み<br/>RESOLVED: 計算済み、かつ親の `Study` が完了している |
-| preimage    | str        | false | target を生成する元の値。                                                                                                                                      |
+| 名前          | 型            | 必須    | 説明                                                                                                                                                        |
+|-------------|--------------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| study_id    | str          | true  | 親となる `Study` の ID。target と生成時刻から生成される。                                                                                                                    |
+| trial_id    | str          | true  | このオブジェクトの ID。study_id と trial_range から生成される。                                                                                                              |
+| trial_range | `TrialRange` | true  | 計算する範囲。                                                                                                                                                   |
+| target      | str          | true  | 目標となる値。バイト配列をhex表記したもの。                                                                                                                                   |
+| method      | str          | true  | 計算手法を表す文字列。                                                                                                                                               |
+| status      | str          | true  | この `Trial` の状態。取りうる値は以下の通り。<br/>- NOT_CALCULATED: 計算前<br/>- RESERVED: いずれかの `Trial` により確保されている<br/>- DONE: 計算済み<br/>- RESOLVED: 計算済み、かつ親の `Study` が完了している |
+| preimage    | str          | false | target を生成する元の値。                                                                                                                                          |
 
 ### 8-2. TrialRange
 | 名前    | 型   | 必須   | 説明                                                 |
 |-------|-----|------|----------------------------------------------------|
 | start | str | true | その `Trial` で行う計算範囲の起点。バイト配列をhex表記したもの。             |
-| size  | int | true | その `Trial` で行う計算範囲のサイズ。ここは hex ではなく `int` であるので注意。 |
+| size  | int | true | その `Trial` で行う計算範囲のサイズ。ここはhex表記ではなく `int` であるので注意。 |
 
 ### 8-3. Study
 | 名前          | 型             | 必須                      | 説明                                        |
