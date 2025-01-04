@@ -32,7 +32,7 @@ flowchart LR
     ワーカーノード -->|2 /trial/reserve| テーブルノード
     ワーカーノード -->|3 /trial/register| テーブルノード
 ```
-カッコ内の数字は典型的な使い方でのAPIアクセスの順番を表しています。
+数字は典型的な使い方でのAPIアクセスの順番を表しています。
 
 ## 5. 使い方
 以下のコマンドはリポジトリ直下で行います。
@@ -134,23 +134,67 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 | パス              | メソッド | パラメータ                           | ボディ     | レスポンス                  | 説明                                                                                                           |
 |-----------------|------|---------------------------------|---------|------------------------|--------------------------------------------------------------------------------------------------------------|
 | /study          | GET  | study_id: `str`                 | なし      | `Study` あるいは `Message` | 処理結果の取得を試みます。<br/>まだ処理が完了していない場合は `Message` が返却されます。                                                         |
-| /study/register | POST | なし                              | `Study` | `StudyRegisterResult`  |                                                                                                              |
+| /study/register | POST | なし                              | `Study` | `StudyRegisterResult`  | テーブルノードに `Study` を登録する時に使います。。                                                                               |
 | /trial/reserve  | GET  | max_size: `int`<br/>name: `str` | なし      | `Trial`                | ワーカーノードが担当する `Trial` を確保するときに使います。<br/>テーブルノードの状況によっては計算量 (`Trial.trial_range.size`) が max_size を下回ることがあります。 |
-| /trial/register | POST | name: `str`                     | `Trial` | `TrialRegisterResult`  |                                                                                                              |
+| /trial/register | POST | name: `str`                     | `Trial` | `TrialRegisterResult`  | ワーカーノードが担当した `Trial` を登録する時に使います。                                                                            |
 | /status         | GET  | なし                              | なし      | `Curriculum`           | 現在のテーブルノードの状況を確認できます。                                                                                        |
 
-## 7. 型定義
+## 7. Config
+リポジトリには `config.json` が用意されていて、この値で分散処理のいくつかの振る舞いを制御できます。
 
-### 7-1. Trial
+| 名前                         | 型   | 必須    | 説明                                                                  |
+|----------------------------|-----|-------|---------------------------------------------------------------------|
+| common.minimum_chunk_size  | int | true  | `Trial` のサイズの最小値。実際のサイズはこの値と worker.trial_size_ratio との積。必ず2の累乗にする。 |
+| table.port                 | int | true  | テーブルノードが利用するポート番号                                                   |
+| table.trial_suggest_method | str | true  | `Trial` を提案する際に使用する手法。現状では `"sequential"` のみが有効。                    |
+| worker.thread_num          | int | false | ワーカーノードで使用するスレッドの数。デフォルト値は 0 で、この場合はCPU数を使う。                        |
+| worker.trial_size_ratio    | int | false | `Trial` のサイズを決める倍率。デフォルト値は 0 で、この場合は実行前にベンチマークを行い、それを元に決定する。        |
+| worker.sleep_sec_on_empty  | int | false | テーブルノードの `Study` が無くなった際に待機する秒数。デフォルト値は 10 (秒)。                     |
 
-### 7-2. Study
 
-### 7-3. Curriculum
+## 8. 型定義
+### 8-1. Trial
+| 名前          | 型          | 必須    | 説明                                                                                                                                                    |
+|-------------|------------|-------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| study_id    | str        | true  | 親となる `Study` の ID。target と生成時刻から生成される。                                                                                                                |
+| trial_id    | str        | true  | このオブジェクトの ID。study_id と trial_range から生成される。                                                                                                          |
+| trial_range | TrialRange | true  | 計算する範囲。                                                                                                                                               |
+| target      | str        | true  | 目標となる値。バイト配列をhex表記したもの。                                                                                                                               |
+| method      | str        | true  | 計算手法を表す文字列。                                                                                                                                           |
+| status      | str        | true  | この `Trial` の状態。取りうる値は以下の通り。<br/>- NOT_CALCULATED: 計算前<br/>-RESERVED: いずれかの `Trial` により確保されている<br/>-DONE: 計算済み<br/>RESOLVED: 計算済み、かつ親の `Study` が完了している |
+| preimage    | str        | false | target を生成する元の値。                                                                                                                                      |
 
-### 7-4. TrialRegisterResult
+### 8-2. Study
+| 名前          | 型             | 必須                      | 説明                                        |
+|-------------|---------------|-------------------------|-------------------------------------------|
+| study_id    | str           | false<br/>(/study では必須) | このオブジェクトのID。/study/register で登録した際に発行される。 |
+| target      | str           | true                    | 目標となる値。バイト配列を hex 表記したもの。                 |
+| method      | str           | true                    | 計算手法を表す文字列。                               |                                           |
+| trial_table | list[`Trial`] | false<br/>(/study では必須) | 計算手法を表す文字列。                               |                                           |
+| result      | str           | false                   | target を生成する元の値。                          |                                           |
+| current_max | str           | false<br/>(/study では必須) | その時点で計算している値の最大値。 バイト配列を hex 表記したもの。      |                                           |
 
-### 7-5. StudyRegisterResult
 
-### 7-6. Message
+### 8-3. Curriculum
+| 名前      | 型             | 必須   | 説明                 |
+|---------|---------------|------|--------------------|
+| studies | list[`Study`] | true | 実行予定の `Study` の一覧。 |
 
-## 8. Config
+### 8-4. TrialRegisterResult
+| 名前       | 型    | 必須    | 説明                          |
+|----------|------|-------|-----------------------------|
+| success  | bool | true  | 登録が成功したかどうかを表すフラグ。          |
+| has_hext | bool | true  | 次の `Trial` が確保可能かどうかを表すフラグ。 |
+| message  | str  | false | 登録が失敗した際のエラーメッセージ。          |
+
+### 8-5. StudyRegisterResult
+| 名前       | 型    | 必須    | 説明                 |
+|----------|------|-------|--------------------|
+| success  | bool | true  | 登録が成功したかどうかを表すフラグ。 |
+| study_id | str  | true  | 登録時に発行されるID。       |
+| message  | str  | false | 登録が失敗した際のエラーメッセージ。 |
+
+### 8-6. Message
+| 名前      | 型   | 必須   | 説明 |
+|---------|-----|------|----|
+| message | str | true |    |

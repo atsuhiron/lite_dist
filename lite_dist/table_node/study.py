@@ -112,10 +112,10 @@ class Study:
 
         return {
                 "study_id": self.study_id,
-                "target": self.target,
+                "target": to_hex(self.target),
                 "method": self.method,
                 "trial_table": [tri.to_dict() for tri in self.trial_table],
-                "current_max": self.current_max,
+                "current_max": to_hex(self.current_max),
                 "result": result
             }
 
