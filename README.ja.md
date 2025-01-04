@@ -164,7 +164,13 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 | status      | str        | true  | この `Trial` の状態。取りうる値は以下の通り。<br/>- NOT_CALCULATED: 計算前<br/>-RESERVED: いずれかの `Trial` により確保されている<br/>-DONE: 計算済み<br/>RESOLVED: 計算済み、かつ親の `Study` が完了している |
 | preimage    | str        | false | target を生成する元の値。                                                                                                                                      |
 
-### 8-2. Study
+### 8-2. TrialRange
+| 名前    | 型   | 必須   | 説明                                                 |
+|-------|-----|------|----------------------------------------------------|
+| start | str | true | その `Trial` で行う計算範囲の起点。バイト配列をhex表記したもの。             |
+| size  | int | true | その `Trial` で行う計算範囲のサイズ。ここは hex ではなく `int` であるので注意。 |
+
+### 8-3. Study
 | 名前          | 型             | 必須                      | 説明                                        |
 |-------------|---------------|-------------------------|-------------------------------------------|
 | study_id    | str           | false<br/>(/study では必須) | このオブジェクトのID。/study/register で登録した際に発行される。 |
@@ -175,26 +181,26 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 | current_max | str           | false<br/>(/study では必須) | その時点で計算している値の最大値。 バイト配列を hex 表記したもの。      |                                           |
 
 
-### 8-3. Curriculum
+### 8-4. Curriculum
 | 名前      | 型             | 必須   | 説明                 |
 |---------|---------------|------|--------------------|
 | studies | list[`Study`] | true | 実行予定の `Study` の一覧。 |
 
-### 8-4. TrialRegisterResult
+### 8-5. TrialRegisterResult
 | 名前       | 型    | 必須    | 説明                          |
 |----------|------|-------|-----------------------------|
 | success  | bool | true  | 登録が成功したかどうかを表すフラグ。          |
 | has_hext | bool | true  | 次の `Trial` が確保可能かどうかを表すフラグ。 |
 | message  | str  | false | 登録が失敗した際のエラーメッセージ。          |
 
-### 8-5. StudyRegisterResult
+### 8-6. StudyRegisterResult
 | 名前       | 型    | 必須    | 説明                 |
 |----------|------|-------|--------------------|
 | success  | bool | true  | 登録が成功したかどうかを表すフラグ。 |
 | study_id | str  | true  | 登録時に発行されるID。       |
 | message  | str  | false | 登録が失敗した際のエラーメッセージ。 |
 
-### 8-6. Message
+### 8-7. Message
 | 名前      | 型   | 必須   | 説明 |
 |---------|-----|------|----|
 | message | str | true |    |
