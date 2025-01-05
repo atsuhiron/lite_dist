@@ -19,7 +19,8 @@ python >= 3.12
 `Study` の登録や結果の取得を行います。このノードを動かすための python スクリプトは現状では実装していないので、curl や talend などのAPIツールを使用してください。
 
 ### 3-2. テーブルノード
-`Study` を細切れにした `Trial` を管理するノードです。`Trial` の提案とその結果の集約を行います。このノードの台数は常に1台にしてください。
+`Study` を細切れにした `Trial` を管理するノードです。`Trial` の提案とその結果の集約を行います。  
+**このノードの台数は常に1台にしてください。**
 
 ### 3-3. ワーカーノード
 テーブルノードから取得した `Trial` を実行し、結果をテーブルノードに返却します。
@@ -87,7 +88,7 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 計算が終わっていれば次のような JSON が返却されます。
 ```json
 {
-    "current_max": 1778384895,
+    "current_max": "69ffffff",
     "method": "md5",
     "result": "696e666f",
     "study_id": "4dd9e078-ca16-11ef-8f79-caf9b6b99962",
@@ -121,7 +122,7 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 }
 
 ```
-各項目については後述しますが `result` が今回の計算結果です。
+`result` がこの `Study` での計算結果です。
 終わっていなければ以下のようなメッセージが返却されます。
 ```json
 {
@@ -130,7 +131,6 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 ```
 
 ## 6. テーブルノードのAPI仕様
-
 | パス              | メソッド | パラメータ                           | ボディ     | レスポンス                  | 説明                                                                                                           |
 |-----------------|------|---------------------------------|---------|------------------------|--------------------------------------------------------------------------------------------------------------|
 | /study          | GET  | study_id: `str`                 | なし      | `Study` あるいは `Message` | 処理結果の取得を試みます。<br/>まだ処理が完了していない場合は `Message` が返却されます。                                                         |
@@ -145,7 +145,7 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 | 名前                         | 型   | 必須    | 説明                                                                  |
 |----------------------------|-----|-------|---------------------------------------------------------------------|
 | common.minimum_chunk_size  | int | true  | `Trial` のサイズの最小値。実際のサイズはこの値と worker.trial_size_ratio との積。必ず2の累乗にする。 |
-| table.port                 | int | true  | テーブルノードが利用するポート番号                                                   |
+| table.port                 | int | true  | テーブルノードが利用するポート番号。                                                  |
 | table.trial_suggest_method | str | true  | `Trial` を提案する際に使用する手法。現状では `"sequential"` のみが有効。                    |
 | worker.thread_num          | int | false | ワーカーノードで使用するスレッドの数。デフォルト値は 0 で、この場合はCPU数を使う。                        |
 | worker.trial_size_ratio    | int | false | `Trial` のサイズを決める倍率。デフォルト値は 0 で、この場合は実行前にベンチマークを行い、それを元に決定する。        |
@@ -171,14 +171,14 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 | size  | int | true | その `Trial` で行う計算範囲のサイズ。ここはhex表記ではなく `int` であるので注意。 |
 
 ### 8-3. Study
-| 名前          | 型             | 必須                      | 説明                                        |
-|-------------|---------------|-------------------------|-------------------------------------------|
-| study_id    | str           | false<br/>(/study では必須) | このオブジェクトのID。/study/register で登録した際に発行される。 |
-| target      | str           | true                    | 目標となる値。バイト配列を hex 表記したもの。                 |
-| method      | str           | true                    | 計算手法を表す文字列。                               |                                           |
-| trial_table | list[`Trial`] | false<br/>(/study では必須) | 計算手法を表す文字列。                               |                                           |
-| result      | str           | false                   | target を生成する元の値。                          |                                           |
-| current_max | str           | false<br/>(/study では必須) | その時点で計算している値の最大値。 バイト配列を hex 表記したもの。      |                                           |
+| 名前          | 型             | 必須                      | 説明                                                     |
+|-------------|---------------|-------------------------|--------------------------------------------------------|
+| study_id    | str           | false<br/>(/study では必須) | このオブジェクトのID。/study/register で登録した際に発行される。              |
+| target      | str           | true                    | 目標となる値。バイト配列を hex 表記したもの。                              |
+| method      | str           | true                    | 計算手法を表す文字列。                                            |                                           |
+| trial_table | list[`Trial`] | false<br/>(/study では必須) | 提案された `Trial` の一覧。計算量・メモリ削減のため隣接する計算済み `Trial` は統合される。 |                                           |
+| result      | str           | false                   | target を生成する元の値。                                       |                                           |
+| current_max | str           | false<br/>(/study では必須) | その時点で計算している値の最大値。 バイト配列を hex 表記したもの。                   |                                           |
 
 
 ### 8-4. Curriculum
