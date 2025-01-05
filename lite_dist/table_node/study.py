@@ -6,7 +6,7 @@ import threading
 from lite_dist.config import CONFIG
 from lite_dist.common.trial import Trial
 from lite_dist.common.enums import HashMethod, TrialStatus, TrialSuggestMethod
-from lite_dist.common.util_func import from_hex
+from lite_dist.common.util_func import from_hex, to_hex
 from lite_dist.table_node.trial_suggest_strategy import BaseTrialSuggestStrategy, SequentialTrialSuggestStrategy
 
 
@@ -105,13 +105,18 @@ class Study:
         return self.result is not None
 
     def to_dict(self) -> dict:
+        if self.result is None:
+            result = None
+        else:
+            result = to_hex(self.result)
+
         return {
                 "study_id": self.study_id,
-                "target": self.target,
+                "target": to_hex(self.target),
                 "method": self.method,
                 "trial_table": [tri.to_dict() for tri in self.trial_table],
-                "current_max": self.current_max,
-                "result": self.result
+                "current_max": to_hex(self.current_max),
+                "result": result
             }
 
     @staticmethod
