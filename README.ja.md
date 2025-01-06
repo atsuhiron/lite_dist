@@ -123,7 +123,7 @@ curl http://{IP_OF_TABLE_NODE}:80/study?study_id=a5ae10cf-c9cf-11ef-ac70-caf9b6b
 
 ```
 `result` がこの `Study` での計算結果です。
-終わっていなければ以下のようなメッセージが返却されます。
+終わっていなければ以下のようなメッセージが返却されます。この時ステータスコードは 202 です。
 ```json
 {
   "message": "a5ae10cf-c9cf-11ef-ac70-caf9b6b99962 has not been resolved yet"

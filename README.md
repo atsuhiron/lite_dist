@@ -123,7 +123,7 @@ If the calculation is completed, the following JSON will be returned.
 
 ```
 `result` is the result of this `Study`.
-If it is not finished, the following message is returned.
+If it is not finished, the following message is returned. The status code is 202.
 ```json
 {
   "message": "a5ae10cf-c9cf-11ef-ac70-caf9b6b99962 has not been resolved yet"
