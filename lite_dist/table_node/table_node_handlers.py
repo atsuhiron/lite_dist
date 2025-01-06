@@ -36,7 +36,7 @@ def handle_study():
     try:
         study = CURRICULUM.pop_study_if_resolved(study_id)
         if study is None:
-            return jsonify({"message": "%s has not been resolved yet" % study_id}), 200
+            return jsonify({"message": "%s has not been resolved yet" % study_id}), 202
         else:
             return jsonify(study.to_dict()), 200
     except ValueError as e:
