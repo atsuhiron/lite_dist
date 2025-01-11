@@ -27,6 +27,10 @@ def sha1(x: int) -> tuple[int, bytes]:
     return x, hashlib.sha1(to_bytes(x)).digest()
 
 
+def sha256(x: int) -> tuple[int, bytes]:
+    return x, hashlib.sha256(to_bytes(x)).digest()
+
+
 class Worker:
     def __init__(self, table_node_client: BaseTableNodeClient):
         self.client = table_node_client
@@ -84,5 +88,7 @@ class Worker:
                 return HashWorkerTask(trial, md5, CONFIG.worker.get_thread_num() > 1)
             case HashMethod.SHA1:
                 return HashWorkerTask(trial, sha1, CONFIG.worker.get_thread_num() > 1)
+            case HashMethod.SHA256:
+                return HashWorkerTask(trial, sha256, CONFIG.worker.get_thread_num() > 1)
             case _:
                 raise ValueError("不明なメソッドです: %s" % trial.method.name)

@@ -5,6 +5,7 @@ class HashMethod(str, Enum):
     DEFAULT = "default"
     MD5 = "md5"
     SHA1 = "sha-1"
+    SHA256 = "sha-256"
 
 
 class TrialStatus(str, Enum):
