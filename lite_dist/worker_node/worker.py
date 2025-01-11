@@ -58,17 +58,17 @@ class Worker:
             time.sleep(CONFIG.worker.sleep_sec_on_empty)
             return
 
-        task = self.map_worker_task(trial.method)
-        trial = task.run(trial, self.pool)
+        task = self.map_worker_task(trial)
+        trial = task.run(self.pool)
         _ = self.client.register_trial(trial)
 
     @staticmethod
     def _measure_trial_ratio_size() -> int:
         benchmark_trial = Trial.create_benchmark_trial()
-        wt = HashWorkerTask(md5, False)
+        wt = HashWorkerTask(benchmark_trial, md5, False)
 
         start_time = time.time()
-        wt.run(benchmark_trial, None)
+        wt.run(None)
         elapsed = time.time() - start_time
         logger.info(elapsed)
 
@@ -78,11 +78,11 @@ class Worker:
         return 2 ** ratio_power
 
     @staticmethod
-    def map_worker_task(method: HashMethod) -> BaseWorkerTask:
-        match method:
+    def map_worker_task(trial: Trial) -> BaseWorkerTask:
+        match trial.method:
             case HashMethod.MD5:
-                return HashWorkerTask(md5, CONFIG.worker.get_thread_num() > 1)
+                return HashWorkerTask(trial, md5, CONFIG.worker.get_thread_num() > 1)
             case HashMethod.SHA1:
-                return HashWorkerTask(sha1, CONFIG.worker.get_thread_num() > 1)
+                return HashWorkerTask(trial, sha1, CONFIG.worker.get_thread_num() > 1)
             case _:
-                raise ValueError("不明なメソッドです: %s" % method.name)
+                raise ValueError("不明なメソッドです: %s" % trial.method.name)

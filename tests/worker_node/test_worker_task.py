@@ -26,6 +26,6 @@ def _id_hash(x: int) -> tuple[int, bytes]:
     ]
 )
 def test_single_thread_run(trial: Trial, expected: Trial):
-    sut = HashWorkerTask(_id_hash, 1)
-    actual = sut.run(trial, None)
+    sut = HashWorkerTask(trial, _id_hash, False)
+    actual = sut.run(None)
     assert actual == expected
