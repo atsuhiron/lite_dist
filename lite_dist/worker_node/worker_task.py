@@ -18,16 +18,16 @@ class BaseWorkerTask(metaclass=abc.ABCMeta):
 class HashWorkerTask(BaseWorkerTask):
     CHUNK_SIZE = 1024
 
-    def __init__(self, hash_func: Callable[[int], tuple[int, bytes]], thread_num: int):
+    def __init__(self, hash_func: Callable[[int], tuple[int, bytes]], do_multithread: bool):
         self.hash_func = hash_func
-        self.thread_num = thread_num
+        self.do_multithread = do_multithread
 
     def run(self, trial: Trial, pool: Pool | None) -> Trial:
-        if self.thread_num == 1 or pool is None:
+        if (not self.do_multithread) or pool is None:
             preimage_or_none = self._run_with_single_thread(
                 trial.target, trial.trial_range.start, trial.trial_range.size
             )
-        elif self.thread_num > 1 and pool is not None:
+        elif self.do_multithread and pool is not None:
             preimage_or_none = self._run_with_multi_thread(
                 pool, trial.target, trial.trial_range.start, trial.trial_range.size
             )
