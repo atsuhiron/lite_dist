@@ -16,11 +16,10 @@ class BaseWorkerTask(metaclass=abc.ABCMeta):
 
 
 class HashWorkerTask(BaseWorkerTask):
-    CHUNK_SIZE = 1024
-
-    def __init__(self, hash_func: Callable[[int], tuple[int, bytes]], do_multithread: bool):
+    def __init__(self, hash_func: Callable[[int], tuple[int, bytes]], do_multithread: bool, chunk_size: int | None = None):
         self.hash_func = hash_func
         self.do_multithread = do_multithread
+        self.chunk_size = chunk_size or 1024
 
     def run(self, trial: Trial, pool: Pool | None) -> Trial:
         if (not self.do_multithread) or pool is None:
@@ -51,7 +50,7 @@ class HashWorkerTask(BaseWorkerTask):
     def _run_with_multi_thread(self, pool: Pool, target_int: int, start_int: int, size: int) -> int | None:
         target_bytes = to_bytes(target_int)
         with tqdm(total=size) as pbar:
-            for value, hashed_bytes in pool.imap_unordered(self.hash_func, range(start_int, start_int + size), chunksize=self.CHUNK_SIZE):
+            for value, hashed_bytes in pool.imap_unordered(self.hash_func, range(start_int, start_int + size), chunksize=self.chunk_size):
                 if hashed_bytes == target_bytes:
                     return value
                 pbar.update()
